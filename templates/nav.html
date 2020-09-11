@@ -1,0 +1,25 @@
+<nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+    <div class="col-sm">
+        <a class="navbar-brand" href="{% url 'pending_index' %}">d<span style="color:red">o</span>cs:</a>
+    </div>
+        {% if user.is_authenticated %}
+        <div class="col-sm">
+        <a class="p-2 text-dark" href="{% url 'pending_index' %}">Pending</a>
+        </div>
+        <div class="col-sm">
+        <a class="p-2 text-dark" href="{% url 'approved_index' %}">Approved</a>
+        </div>
+        <div class="col-sm">
+        <a class="p-2 text-dark" href="{% url 'declined_index' %}">Declined</a>
+        </div>
+        <div class="col-sm">
+        <a class="p-2 text-dark" href="{% url 'search' %}">Search</a>
+        </div>
+        Пользователь: {{ user.username }}.
+        <a class="p-2 text-dark" href="{% url 'pending_index' %}">Новый заказ</a>
+        <a class="p-2 text-dark" href="{% url 'password_change' %}">Изменить пароль</a>
+        <a class="p-2 text-dark" href="{% url 'logout' %}">Выйти</a>
+        {% else %}
+        <a class="p-2 text-dark" href="{% url 'login' %}">Войти</a>
+        {% endif %}
+</nav>

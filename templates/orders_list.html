@@ -1,0 +1,76 @@
+<div class="container border border-top-0">
+    <div class="row text-dark pt-1 pb-1 border-top" style="background-color: #e3f2fd">
+        <div class="col">
+            Number
+        </div>
+        <div class="col-6">
+            Order
+        </div>
+        <div class="col">
+            Amount
+        </div>
+        <div class="col-sm text-center">
+            HOD
+        </div>
+        <div class="col-sm text-center">
+            Purchasing
+        </div>
+        <div class="col-sm text-center">
+            Finance
+        </div>
+        <div class="col-sm text-center">
+            GM/EAM
+        </div>
+    </div>            
+    {% for order in page %}
+    <div class="row {% cycle 'bg-light' 'bg-white' %} text-dark pt-1 pb-1 border-top">
+        <div class="col">
+            <a name="order_{{ order.id }}" href="{% url 'order' order.id %}">
+            {{ order.id }}
+            </a>
+        </div>
+        <div class="col-6">
+            {{ order.text }}
+        </div>
+        <div class="col text-left">
+            {{ order.amount }}
+        </div>
+        <div class="col-sm text-center">
+            {% if order.hod_approved == Null %}
+            <span style="color:grey; font-weight:bold">?</span>
+            {% elif order.hod_approved == False %}
+            <span style="color:red; font-weight:bold">/</span>
+            {% else %}
+            <span style="color:green; font-weight:bold">+</span>
+            {% endif %}
+        </div>
+        <div class="col-sm text-center">
+            {% if order.pur_approved == Null %}
+            <span style="color:grey; font-weight:bold">?</span>
+            {% elif order.pur_approved == False %}
+            <span style="color:red; font-weight:bold">/</span>
+            {% else %}
+            <span style="color:green; font-weight:bold">+</span>
+            {% endif %}
+        </div>
+        <div class="col-sm text-center">
+            {% if order.fin_approved == Null %}
+            <span style="color:grey; font-weight:bold">?</span>
+            {% elif order.fin_approved == False %}
+            <span style="color:red; font-weight:bold">/</span>
+            {% else %}
+            <span style="color:green; font-weight:bold">+</span>
+            {% endif %}
+        </div>
+        <div class="col-sm text-center">
+            {% if order.gm_approved == Null %}
+            <span style="color:grey; font-weight:bold">?</span>
+            {% elif order.gm_approved == False %}
+            <span style="color:red; font-weight:bold">/</span>
+            {% else %}
+            <span style="color:green; font-weight:bold">+</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>

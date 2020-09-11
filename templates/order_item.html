@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ order.id }}{% endblock %}
+{% block header %}{{ order.id }}{% endblock %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm">
+            {{ order.id }}
+        </div>
+        <div class="col-md">
+            {{ order.requested_by }}
+        </div>
+    </div>
+    <div class="row">
+        {{ order.text }}
+    </div>
+    <div class="row text-right">
+        {{ order.amount }} рублей
+        включая 20% НДС
+    </div>
+    <div class="row" style="color:{% if order.hod_approved == False %}red{% elif order.hod_approved == True %}green{% endif %}">
+        <div class="col-md">
+            HOD
+        </div>
+        <div class="col">Name Lastname
+            {% if order.hod_approved != Null %}
+            {{ order.hod_user.first_name }} {{ order.hod_user.last_name }}
+            {% endif %}
+        </div>
+        <div class="col">
+            Approval
+            {% if order.hod_approved == True %}
+            Approved
+            {% elif order.hod_approved == False %}
+            Declined
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
