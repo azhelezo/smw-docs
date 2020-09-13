@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from orders.models import Order
 
 User = get_user_model()
 
@@ -30,3 +31,19 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+class Signature(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET('Retired'),
+        related_name='signatures'
+        )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='signature'
+        )
+    approved = models.BooleanField(default=False, null=False)
+    date_created = models.DateTimeField(auto_now_add=True, null=False)
+    win_username = models.CharField(default=None, null=False, max_length=50)
+    win_pcname = models.CharField(default=None, null=False, max_length=50)
