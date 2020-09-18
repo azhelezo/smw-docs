@@ -9,7 +9,7 @@
             Order Nr.: {{ order.id }}
         </div>
         <div class="col-md text-right">
-            {{ order.requested_by.profile.get_department_display }} - 
+            {{ order.department }} - 
         </div>
         <div class="col-md text-left">
             {{ order.requested_by.first_name }} {{ order.requested_by.last_name }}
@@ -23,21 +23,25 @@
         {{ order.amount }} rubles<br>
         including 20% VAT
     </div>
-    <div class="row" style="color:{% if order.hod_approved == False %}red{% elif order.hod_approved == True %}green{% endif %}">
+    <div class="row" style="color:{% if hod_approved == False %}red{% elif hod_approved == True %}green{% endif %}">
         <div class="col-md">
             HOD
         </div>
         <div class="col">Name Lastname
-            {% if order.hod_approved != Null %}
-            {{ order.hod_user.first_name }} {{ order.hod_user.last_name }}
+            {% if order.hod_signature %}
+            {{ order.hod_signature.user.first_name }} {{ order.hod_signature.user.last_name }}
             {% endif %}
         </div>
         <div class="col">
-            Approval
-            {% if order.hod_approved == True %}
+            {% if hod_approved == True %}
             Approved
-            {% elif order.hod_approved == False %}
+            {% elif hod_approved == False %}
             Declined
+            {% elif is_hod and hod_aproved == None %}
+            <a href="{% url 'order_sign' order.id 'hod' True %}">Approve</a> /
+            <a href="{% url 'order_sign' order.id 'hod' False %}">Decline</a>
+            {% else %}
+            Not signed
             {% endif %}
         </div>
     </div>

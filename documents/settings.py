@@ -97,4 +97,4 @@ STATICFILES_DIRS = [
 ]
 
 LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = 'pending_index'
+LOGIN_REDIRECT_URL = 'pending_orders'

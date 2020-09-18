@@ -2,17 +2,9 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from orders.models import Order
+from orders.models import Department
 
 User = get_user_model()
-
-DEPARTMENTS = [
-    ('EN', 'Engineering'),
-    ('FI', 'Finance'),
-    ('FB', 'Food and Beverage'),
-    ('RD', 'Rooms Division'),
-    ('SM', 'Sales and Marketing'),
-]
 
 
 class Profile(models.Model):
@@ -21,7 +13,22 @@ class Profile(models.Model):
     is_pur = models.BooleanField(default=False, null=False)
     is_fin = models.BooleanField(default=False, null=False)
     is_gm = models.BooleanField(default=False, null=False)
-    department = models.CharField(choices=DEPARTMENTS, default='Not assigned', max_length=100)
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET('Retired'),
+        related_name='profiles',
+        blank=True, null=True,
+        )
+
+    @classmethod
+    def create(profile, user, department=None):
+        if department == None:
+            if not Department.objects.all().exists():
+                department = Department.objects.create(
+                    code='NA',
+                    name='Not assigned')
+        profile = profile(user=user, department=department)
+        return profile
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -32,18 +39,11 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
-class Signature(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.SET('Retired'),
-        related_name='signatures'
-        )
+
+'''
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
-        related_name='signature'
+        related_name='signatures'
         )
-    approved = models.BooleanField(default=False, null=False)
-    date_created = models.DateTimeField(auto_now_add=True, null=False)
-    win_username = models.CharField(default=None, null=False, max_length=50)
-    win_pcname = models.CharField(default=None, null=False, max_length=50)
+'''

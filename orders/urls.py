@@ -4,9 +4,10 @@ from orders import views
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.pending_index, name='pending_index'),
-    path('approved/', views.pending_index, name='approved_index'),
-    path('declined/', views.pending_index, name='declined_index'),
-    path('search/', views.pending_index, name='search'),
+    path('', views.pending_orders, name='pending_orders'),
+    path('my_orders/', views.my_orders, name='my_orders'),
+    path('search/', views.pending_orders, name='search'),
+    path('order/new/', views.order_new, name='order_new'),
     path('order/<int:order_id>', views.order_item, name='order'),
+    path('order/<int:order_id>/<str:signature_lvl>/<str:resolution>', views.order_sign, name='order_sign'),
 ]
