@@ -3,43 +3,131 @@
 {% block header %}{{ order.id }}{% endblock %}
 {% block content %}
 
-<div class="container border mt-5 p-5">
-    <div class="row border p-3">
+<div class="container mt-5 p-5 border">
+    <div class="row p-3 border border-bottom-0">
+        <div class="col text-right">
+        {% if not declined %}
+        {% if owner %}
+        {% if hod_approved == None %}
+            <a href="{% url 'order_edit' order.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+        {% endif %}
+        <a href="{% url 'order_cancel' order.id 'confirm' %}" class="btn btn-outline-danger btn-sm">Cancel</a>
+        {% endif %}
+        {% endif %}
+        <a href="{% url 'order_printable' order.id %}" class="btn btn-outline-info btn-sm">Printable</a>
+        </div>
+    </div>
+    <div class="row p-3 border border-bottom-0">
         <div class="col-sm text-left">
-            Order Nr.: {{ order.id }}
+            Order Nr.: <b>{{ order.id }}</b>
         </div>
         <div class="col-md text-right">
-            {{ order.department }} - 
+            {{ order.requested_by.get_full_name}}
+        </div>
+    </div>
+    <div class="row p-3 border border-bottom-0">
+        <div class="col-md text-left">
+            Department - <b>{{ order.department }}</b>
+        </div>
+        <div class="col-xl"></div>
+        <div class="col-md text-right">
+            Supplier - 
         </div>
         <div class="col-md text-left">
-            {{ order.requested_by.first_name }} {{ order.requested_by.last_name }}
+            <b>{{ order.supplier }}</b> 
         </div>
     </div>
-    <br>
-    <div class="row border p-3">
-        {{ order.text }}
+    <div class="row p-4 border border-bottom-0">
+        {{ order.text|linebreaksbr }}
     </div>
-    <div class="row-fluid text-right p-3">
-        {{ order.amount }} rubles<br>
-        including 20% VAT
+    <div class="row p-4 border border-bottom-0">
+        <div class="col-xl text-right"> 
+            Amount to be paid: <b>{{ order.amount }}</b> rubles including 20% VAT.
+        </div>
     </div>
-    <div class="row" style="color:{% if hod_approved == False %}red{% elif hod_approved == True %}green{% endif %}">
+    <div class="row p-2 border border-bottom-0" style="color:{% if hod_approved == False %}red{% elif hod_approved == True %}green{% endif %}">
         <div class="col-md">
-            HOD
+            Head of Department:
         </div>
-        <div class="col">Name Lastname
-            {% if order.hod_signature %}
-            {{ order.hod_signature.user.first_name }} {{ order.hod_signature.user.last_name }}
+        <div class="col-md">
+            {% if hod_approved != None %}
+            {{ hod_name }}
             {% endif %}
         </div>
-        <div class="col">
+        <div class="col-md text-right">
             {% if hod_approved == True %}
             Approved
             {% elif hod_approved == False %}
             Declined
             {% elif is_hod and hod_aproved == None %}
-            <a href="{% url 'order_sign' order.id 'hod' True %}">Approve</a> /
-            <a href="{% url 'order_sign' order.id 'hod' False %}">Decline</a>
+            <a href="{% url 'order_sign' order.id 'hod' True %}" class="btn btn-outline-success btn-sm">Approve</a>
+            <a href="{% url 'order_sign' order.id 'hod' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
+            {% else %}
+            Not signed
+            {% endif %}
+        </div>
+    </div>
+    <div class="row p-2 border border-bottom-0" style="color:{% if pur_approved == False %}red{% elif pur_approved == True %}green{% endif %}">
+        <div class="col-md">
+            Purchasing Manager:
+        </div>
+        <div class="col-md">
+            {% if pur_approved != None %}
+            {{ pur_name }}
+            {% endif %}
+        </div>
+        <div class="col-md text-right">
+            {% if pur_approved == True %}
+            Approved
+            {% elif pur_approved == False %}
+            Declined
+            {% elif is_pur and pur_aproved == None %}
+            <a href="{% url 'order_sign' order.id 'pur' True %}" class="btn btn-outline-success btn-sm">Approve</a>
+            <a href="{% url 'order_sign' order.id 'pur' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
+            {% else %}
+            Not signed
+            {% endif %}
+        </div>
+    </div>
+    <div class="row p-2 border border-bottom-0" style="color:{% if fin_approved == False %}red{% elif fin_approved == True %}green{% endif %}">
+        <div class="col-md">
+            Director of Finance:
+        </div>
+        <div class="col-md">
+            {% if fin_approved != None %}
+            {{ fin_name }}
+            {% endif %}
+        </div>
+        <div class="col-md text-right">
+            {% if fin_approved == True %}
+            Approved
+            {% elif fin_approved == False %}
+            Declined
+            {% elif is_fin and fin_aproved == None %}
+            <a href="{% url 'order_sign' order.id 'fin' True %}" class="btn btn-outline-success btn-sm">Approve</a>
+            <a href="{% url 'order_sign' order.id 'fin' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
+            {% else %}
+            Not signed
+            {% endif %}
+        </div>
+    </div>
+    <div class="row p-2 border" style="color:{% if gm_approved == False %}red{% elif gm_approved == True %}green{% endif %}">
+        <div class="col-md">
+            General Manager:
+        </div>
+        <div class="col-md">
+            {% if gm_approved != None %}
+            {{ gm_name }}
+            {% endif %}
+        </div>
+        <div class="col-md text-right">
+            {% if gm_approved == True %}
+            Approved
+            {% elif gm_approved == False %}
+            Declined
+            {% elif is_gm and gm_aproved == None %}
+            <a href="{% url 'order_sign' order.id 'gm' True %}" class="btn btn-outline-success btn-sm">Approve</a>
+            <a href="{% url 'order_sign' order.id 'gm' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
             {% else %}
             Not signed
             {% endif %}

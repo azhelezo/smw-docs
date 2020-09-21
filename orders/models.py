@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+# from users.models import Signature
 
 User = get_user_model()
 
@@ -20,20 +21,14 @@ class Department(models.Model):
     def __str__(self):
         return str(self.name)
 
-class Signature(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.SET(None),
-        related_name='signatures'
-        )
-    approved = models.BooleanField(default=False, null=False)
-    date_created = models.DateTimeField(auto_now_add=True, null=False)
-    win_username = models.CharField(default=None, null=False, max_length=200)
-    win_pcname = models.CharField(default=None, null=False, max_length=200)
-
 class Order(models.Model):
     id = models.AutoField(primary_key=True)
     text = models.TextField(null=False, verbose_name='Заказ')
+    supplier = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        verbose_name='Поставщик')
     amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -50,38 +45,12 @@ class Order(models.Model):
     department = models.ForeignKey(
         Department, 
         on_delete=models.SET(None),
-        related_name='orders'
+        related_name='orders',
+        verbose_name='Отдел'
         )
     date_created = models.DateTimeField('date created', auto_now_add=True)
+    declined = models.BooleanField(default=False)
     all_signed = models.BooleanField(null=True)
-    hod_signature = models.ForeignKey(
-        Signature,
-        on_delete=models.SET(None),
-        related_name='order_hod',
-        default=None,
-        blank=True, null=True,
-        )
-    pur_signature = models.ForeignKey(
-        Signature,
-        on_delete=models.SET(None),
-        related_name='order_pur',
-        default=None,
-        blank=True, null=True,
-        )
-    fin_signature = models.ForeignKey(
-        Signature,
-        on_delete=models.SET(None),
-        related_name='order_fin',
-        default=None,
-        blank=True, null=True,
-        )
-    gm_signature = models.ForeignKey(
-        Signature,
-        on_delete=models.SET(None),
-        related_name='order_gm',
-        default=None,
-        blank=True, null=True,
-        )
 
     def __str__(self):
         return str(self.id)

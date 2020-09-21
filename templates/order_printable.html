@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}{{ order.id }}{% endblock %} | Swissotel</title>
+    <!-- Загрузка статики -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
+    <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+</head>
+
+<body>
+    <main>
+        <div class="container">
+            <div class="row mt-3 p-3 border border-dark border-bottom-0">
+                <div class="col-sm text-left">
+                    Order Nr.: <b>{{ order.id }}</b>
+                </div>
+                <div class="col-md text-right">
+                    {{ order.requested_by.get_full_name}}
+                </div>
+            </div>
+            <div class="row p-3 border border-dark border-bottom-0">
+                <div class="col-md text-left">
+                    Department - <b>{{ order.department }}</b>
+                </div>
+                <div class="col-xl"></div>
+                <div class="col-md text-right">
+                    Supplier - 
+                </div>
+                <div class="col-md text-left">
+                    <b>{{ order.supplier }}</b>
+                </div>
+            </div>
+            <div class="row p-4 border border-dark border-bottom-0">
+                {{ order.text|linebreaksbr }}
+            </div>
+            <div class="row p-4 border border-dark border-bottom-0">
+                <div class="col-xl text-right">
+                Amount to be paid: <b>{{ order.amount }}</b> rubles including 20% VAT.
+                </div>
+            </div>
+            <div class="row p-2 border border-dark border-bottom-0" style="color:{% if hod_approved == False %}red{% elif hod_approved == True %}green{% endif %}">
+                <div class="col-md">
+                    Head of Department:
+                </div>
+                <div class="col-md">
+                    {% if hod_approved != None %}
+                    {{ hod_name }}
+                    {% endif %}
+                </div>
+                <div class="col-md text-right">
+                    {% if hod_approved == True %}
+                    Approved
+                    {% elif hod_approved == False %}
+                    Declined
+                    {% else %}
+                    Not signed
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row p-2 border border-dark border-bottom-0" style="color:{% if pur_approved == False %}red{% elif pur_approved == True %}green{% endif %}">
+                <div class="col-md">
+                    Purchasing Manager:
+                </div>
+                <div class="col-md">
+                    {% if pur_approved != None %}
+                    {{ pur_name }}
+                    {% endif %}
+                </div>
+                <div class="col-md text-right">
+                    {% if pur_approved == True %}
+                    Approved
+                    {% elif pur_approved == False %}
+                    Declined
+                    {% else %}
+                    Not signed
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row p-2 border border-dark border-bottom-0" style="color:{% if fin_approved == False %}red{% elif fin_approved == True %}green{% endif %}">
+                <div class="col-md">
+                    Director of Finance:
+                </div>
+                <div class="col-md">
+                    {% if fin_approved != None %}
+                    {{ fin_name }}
+                    {% endif %}
+                </div>
+                <div class="col-md text-right">
+                    {% if fin_approved == True %}
+                    Approved
+                    {% elif fin_approved == False %}
+                    Declined
+                    {% else %}
+                    Not signed
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row p-2 border border-dark" style="color:{% if gm_approved == False %}red{% elif gm_approved == True %}green{% endif %}">
+                <div class="col-md">
+                    General Manager:
+                </div>
+                <div class="col-md">
+                    {% if gm_approved != None %}
+                    {{ gm_name }}
+                    {% endif %}
+                </div>
+                <div class="col-md text-right">
+                    {% if gm_approved == True %}
+                    Approved
+                    {% elif gm_approved == False %}
+                    Declined
+                    {% else %}
+                    Not signed
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </main>
+</body>
+
+</html>

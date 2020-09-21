@@ -1,0 +1,20 @@
+{% extends "base.html" %} 
+{% block title %}Cancel request{% endblock %}
+
+{% block content %}
+<div class="container-xl text-center p-5">
+    <span style="font-size:x-large;">
+        Are you sure you want to cancel your request:<br>
+        {{ order.id }} - {{ order.supplier }} - {{ order.amount }} Rub - for {{ order.department }} department.<br>
+    </span>
+    <br>
+    <div class="row">
+        <div class="col-md">
+            <a href="{% url 'order_cancel' order.id 'confirmed' %}" class="btn btn-danger">Cancel Request</a>
+        </div>
+        <div class="col-md">
+            <a href="{% url 'order' order.id %}" class="btn btn-secondary">Leave page</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

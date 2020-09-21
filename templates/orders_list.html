@@ -10,16 +10,13 @@
             Amount
         </div>
         <div class="col-sm text-center">
-            HOD
+            Department
         </div>
         <div class="col-sm text-center">
-            Purchasing
+            Requested by
         </div>
         <div class="col-sm text-center">
-            Finance
-        </div>
-        <div class="col-sm text-center">
-            GM/EAM
+            Date
         </div>
     </div>            
     {% for order in page %}
@@ -30,47 +27,20 @@
             </a>
         </div>
         <div class="col-6">
-            {{ order.text }}
+            {{ order.text|linebreaksbr }}
         </div>
         <div class="col text-left">
             {{ order.amount }}
         </div>
-        <div class="col-sm text-center">
-            {% if order.hod_approved == Null %}
-            <span style="color:grey; font-weight:bold">?</span>
-            {% elif order.hod_approved == False %}
-            <span style="color:red; font-weight:bold">/</span>
-            {% else %}
-            <span style="color:green; font-weight:bold">+</span>
-            {% endif %}
+        <div class="col text-center">
+            {{ order.department }}
         </div>
-        <div class="col-sm text-center">
-            {% if order.pur_approved == Null %}
-            <span style="color:grey; font-weight:bold">?</span>
-            {% elif order.pur_approved == False %}
-            <span style="color:red; font-weight:bold">/</span>
-            {% else %}
-            <span style="color:green; font-weight:bold">+</span>
-            {% endif %}
+        <div class="col text-center">
+            {{ order.requested_by.get_full_name }}
         </div>
-        <div class="col-sm text-center">
-            {% if order.fin_approved == Null %}
-            <span style="color:grey; font-weight:bold">?</span>
-            {% elif order.fin_approved == False %}
-            <span style="color:red; font-weight:bold">/</span>
-            {% else %}
-            <span style="color:green; font-weight:bold">+</span>
-            {% endif %}
-        </div>
-        <div class="col-sm text-center">
-            {% if order.gm_approved == Null %}
-            <span style="color:grey; font-weight:bold">?</span>
-            {% elif order.gm_approved == False %}
-            <span style="color:red; font-weight:bold">/</span>
-            {% else %}
-            <span style="color:green; font-weight:bold">+</span>
-            {% endif %}
-        </div>
+        <div class="col text-left">
+            {{ order.date_created|date:'d-m-y' }}
+        </div>        
     </div>
     {% endfor %}
 </div>
