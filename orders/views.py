@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import OrderForm
 from .models import Order
-from users.models import User, Profile, Signature
+from users.models import User, Profile, Signature, LEVEL
 
 @login_required
 def order_new(request):
@@ -133,13 +133,16 @@ def order_item(request, order_id):
 def order_sign(request, order_id, signature_lvl, resolution):
     order = get_object_or_404(Order, pk=order_id)
     profile = request.user.profile
+    print(signature_lvl == 'HOD')
     if (
-            (signature_lvl == 'hod' and not profile.is_hod) or
-            (signature_lvl == 'pur' and not profile.is_pur) or
-            (signature_lvl == 'fin' and not profile.is_fin) or
-            (signature_lvl == 'gm' and not profile.is_gm)
+            (signature_lvl.upper == 'HOD' and not profile.is_hod) or
+            (signature_lvl.upper == 'PUR' and not profile.is_pur) or
+            (signature_lvl.upper == 'FIN' and not profile.is_fin) or
+            (signature_lvl.upper == 'GM' and not profile.is_gm)
         ) or (
             order.signatures.filter(level=signature_lvl.upper()).first() != None
+        ) or (
+            signature_lvl not in [x for x, y in LEVEL]
         ):
         return redirect('order', order_id)
     Signature.objects.create(
