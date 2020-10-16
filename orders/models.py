@@ -50,7 +50,7 @@ class Order(models.Model):
         )
     date_created = models.DateTimeField('date created', auto_now_add=True)
     declined = models.BooleanField(default=False)
-    all_signed = models.BooleanField(null=True)
+    all_signed = models.BooleanField(null=True, default=False)
 
     def __str__(self):
         return str(self.id)

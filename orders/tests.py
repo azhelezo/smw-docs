@@ -83,7 +83,7 @@ class TestOrders(TestCase):
             first_name='Artem',
             last_name='Sidorov'
             )
-        self.fin1.profile.is_pur = True
+        self.fin1.profile.is_fin = True
         self.fin1.profile.department = self.fin_dep
         self.fin1.profile.save()
         self.fin2 = User.objects.create_user(
@@ -92,7 +92,7 @@ class TestOrders(TestCase):
             first_name='Olga',
             last_name='Red'
             )
-        self.fin2.profile.is_pur = True
+        self.fin2.profile.is_fin = True
         self.fin2.profile.department = self.fin_dep
         self.fin2.profile.save()
         self.gm = User.objects.create_user(
@@ -101,7 +101,7 @@ class TestOrders(TestCase):
             first_name='Jan',
             last_name='GM'
             )
-        self.gm.profile.is_pur = True
+        self.gm.profile.is_gm = True
         self.gm.profile.department = self.gm_dep
         self.gm.profile.save()
         self.user1_client.force_login(self.user1)
@@ -114,51 +114,84 @@ class TestOrders(TestCase):
         self.fin2_client.force_login(self.fin2)
         self.gm_client.force_login(self.gm)
         self.order_fin = Order.objects.create(
-                supplier='Romashka',
-                text='7150000 - A4 Paper',
-                department=self.fin_dep,
-                amount=100500,
-                requested_by=self.user1
+            text='7150000 - A4 Paper',
+            supplier='Romashka',
+            amount=100500,
+            requested_by=self.user1,
+            department=self.fin_dep,
             )
-
-    def order_visible(self, client, lookup):
-        response = client.get(reverse('pending_orders'))
-        self.assertContains(response, lookup)
-    
-    def order_not_visible(self, client, lookup):
-        response = client.get(reverse('pending_orders'))
-        self.assertNotContains(response, lookup)
-
-    def attempt_signature(self, client, order):
-        for lvl in LEVEL:
-            response = client.post(reverse('order_sign', args=[order.id, lvl[0], True]))
-            print(f'{response.wsgi_request.user} signing as {lvl[0]}')
-            #print(f'{order.signatures.all().filter(level=lvl, user=response.wsgi_request.user)}')
-
-    def test_order_visibility(self):
-        view = [
-            self.user1_client, self.hod1_client,
-            self.pur1_client, self.pur2_client,
-            self.fin1_client, self.fin2_client,
-            self.gm_client
-            ] #  users can see order_fin
-        no_view = [self.user2_client, self.hod2_client] # users can not see order_fin
-
-        for client in view:
-            self.order_visible(client, self.order_fin.text)
-
-        for client in no_view:
-            self.order_not_visible(client, self.order_fin.text)
-
-    def test_order_signature(self):
-        clients = [
+        self.order_eng = Order.objects.create(
+            text='6093333 - WD-40',
+            supplier='Ulybka',
+            amount=9000,
+            requested_by=self.user2,
+            department=self.eng_dep
+            )
+        self.ALL_CLIENTS = [
             self.user1_client, self.user2_client,
             self.hod1_client, self.hod2_client,
             self.pur1_client, self.pur2_client,
             self.fin1_client, self.fin2_client,
             self.gm_client
             ]
-        for client in clients:
-            self.attempt_signature(client, self.order_fin)
-        print(Signature.objects.all())
+
+    def client_list_excluding(self, to_exclude):
+        return [cli for cli in self.ALL_CLIENTS if cli not in to_exclude]
+    
+    def order_visibility(self, client, order, destination, visibility):
+        response = client.get(reverse(destination))
+        if visibility:
+            self.assertContains(response, order.text)
+        else:
+            self.assertNotContains(response, order.text)
+
+    def check_clients(self, view, no_view, order, desination):
+        for client in view:
+            self.order_visibility(client, order, desination, True)
+        for client in no_view:
+            self.order_visibility(client, order, desination, False)
+
+    def attempt_signature(self, client, order, resolution):
+        for lvl in LEVEL:
+            client.post(reverse('order_sign', args=[order.id, lvl[0], resolution]))
+
+    def test_order_on_main(self):
+        no_view = [self.user2_client, self.hod2_client]
+        view = self.client_list_excluding(no_view)
+        self.check_clients(view, no_view, self.order_fin, 'pending_orders')
+
+    def test_order_in_my_orders(self):
+        view = [self.user1_client, ]
+        no_view = self.client_list_excluding(view)
+        self.check_clients(view, no_view, self.order_fin, 'my_orders')
+
+    def test_order_all_approve(self):
+        self.assertEquals(self.order_fin.signatures.count(), 0)
+        for client in self.ALL_CLIENTS:
+            self.attempt_signature(client, self.order_fin, True)
+        self.assertEquals(self.order_fin.signatures.count(), 4)
+        self.order_fin.refresh_from_db()
+        self.assertTrue(self.order_fin.all_signed)
+        
+    def test_order_all_decline(self):
+        self.assertEquals(self.order_eng.signatures.count(), 0)
+        for client in self.ALL_CLIENTS:
+            self.attempt_signature(client, self.order_eng, False)
+        self.assertEquals(self.order_eng.signatures.count(), 1)
+        self.order_eng.refresh_from_db()
+        self.assertTrue(self.order_eng.declined)
+
+    def test_order_hod_approve_pur_decline(self):
+        self.assertEquals(self.order_eng.signatures.count(), 0)
+        self.attempt_signature(self.hod2_client, self.order_eng, True)
+        self.assertEquals(self.order_eng.signatures.count(), 1)
+        self.assertTrue(self.order_eng.signatures.filter(level='HOD').first().approved)
+        self.attempt_signature(self.pur1_client, self.order_eng, False)
+        self.assertEquals(self.order_eng.signatures.count(), 2)
+        self.assertFalse(self.order_eng.signatures.filter(level='PUR').first().approved)
+        self.order_eng.refresh_from_db()
+        self.assertTrue(self.order_eng.declined)
+        self.attempt_signature(self.fin1_client, self.order_eng, True)
+        self.assertEquals(self.order_eng.signatures.count(), 2)
+
         

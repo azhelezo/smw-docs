@@ -1,10 +1,23 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-
+from .decorators import user_can_access
 from .forms import OrderForm
 from .models import Order
 from users.models import User, Profile, Signature, LEVEL
+
+def get_order_list(request, declined):
+    if (
+        (request.user.profile.is_pur) or
+        (request.user.profile.is_fin) or
+        (request.user.profile.is_gm)
+        ):
+        order_list = Order.objects.filter(declined=declined)
+    elif request.user.profile.is_hod:
+        order_list = Order.objects.filter(department=request.user.profile.department, declined=declined)
+    else:
+        order_list = Order.objects.filter(requested_by=request.user, declined=declined)
+    return order_list
 
 @login_required
 def order_new(request):
@@ -16,10 +29,9 @@ def order_new(request):
     return render(request, 'order_new.html', {'form': form})
 
 @login_required
+@user_can_access
 def order_edit(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
-    if request.user != order.requested_by:
-        return redirect('order', order_id)
     form = OrderForm(request.POST or None, instance=order)
     if form.is_valid():
         form.instance.save()
@@ -27,10 +39,9 @@ def order_edit(request, order_id):
     return render(request, 'order_new.html', {'form': form, 'order': order})
 
 @login_required
+@user_can_access
 def order_cancel(request, order_id, confirmed):
     order = get_object_or_404(Order, pk=order_id)
-    if request.user != order.requested_by:
-        return redirect('order', order_id)
     if confirmed == 'confirmed':
         order.declined = True
         order.save(force_update=True)
@@ -39,8 +50,6 @@ def order_cancel(request, order_id, confirmed):
 
 @login_required
 def my_orders(request):
-    if request.user.profile.department == None:
-        return render(request, 'contact_admin.html')
     order_list = Order.objects.filter(requested_by=request.user)
     paginator = Paginator(order_list, 10)
     page_number = request.GET.get('page')
@@ -52,24 +61,14 @@ def my_orders(request):
     )
 
 @login_required
+@user_can_access
 def order_printable(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     return render(request, 'order_printable.html', {'order': order})
 
 @login_required
 def pending_orders(request):
-    if request.user.profile.department == None:
-        return render(request, 'contact_admin.html')
-    if (
-        (request.user.profile.is_pur) or
-        (request.user.profile.is_fin) or
-        (request.user.profile.is_gm)
-        ):
-        order_list = Order.objects.filter(declined=False)
-    elif request.user.profile.is_hod:
-        order_list = Order.objects.filter(department=request.user.profile.department, declined=False)
-    else:
-        order_list = Order.objects.filter(requested_by=request.user, declined=False)
+    order_list = get_order_list(request=request, declined=False)
     paginator = Paginator(order_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -81,18 +80,7 @@ def pending_orders(request):
 
 @login_required
 def declined_orders(request):
-    if request.user.profile.department == None:
-        return render(request, 'contact_admin.html')
-    if (
-        (request.user.profile.is_pur) or
-        (request.user.profile.is_fin) or
-        (request.user.profile.is_gm)
-        ):
-        order_list = Order.objects.filter(declined=True)
-    elif request.user.profile.is_hod:
-        order_list = Order.objects.filter(department=request.user.profile.department, declined=True)
-    else:
-        order_list = Order.objects.filter(requested_by=request.user, declined=True)
+    order_list = get_order_list(request=request, declined=True)
     paginator = Paginator(order_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -103,6 +91,7 @@ def declined_orders(request):
     )
 
 @login_required
+@user_can_access
 def order_item(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     hod_signature = order.signatures.filter(level='HOD').first()
@@ -130,19 +119,21 @@ def order_item(request, order_id):
     return render(request, 'order_item.html', context)
 
 @login_required
+@user_can_access
 def order_sign(request, order_id, signature_lvl, resolution):
     order = get_object_or_404(Order, pk=order_id)
     profile = request.user.profile
-    print(signature_lvl == 'HOD')
     if (
-            (signature_lvl.upper == 'HOD' and not profile.is_hod) or
-            (signature_lvl.upper == 'PUR' and not profile.is_pur) or
-            (signature_lvl.upper == 'FIN' and not profile.is_fin) or
-            (signature_lvl.upper == 'GM' and not profile.is_gm)
+            (signature_lvl.upper() == 'HOD' and not profile.is_hod) or
+            (signature_lvl.upper() == 'PUR' and not profile.is_pur) or
+            (signature_lvl.upper() == 'FIN' and not profile.is_fin) or
+            (signature_lvl.upper() == 'GM' and not profile.is_gm)
         ) or (
             order.signatures.filter(level=signature_lvl.upper()).first() != None
         ) or (
-            signature_lvl not in [x for x, y in LEVEL]
+            signature_lvl.upper() not in [x for x, y in LEVEL]
+        ) or (
+            order.declined
         ):
         return redirect('order', order_id)
     Signature.objects.create(
@@ -151,9 +142,12 @@ def order_sign(request, order_id, signature_lvl, resolution):
             level=signature_lvl.upper(),
             approved=resolution,
             win_username=request.META['USERNAME'],
-            win_pcname=request.META['COMPUTERNAME']
+            win_pcname='default' #  request.META['COMPUTERNAME']
         )
     if resolution == 'False':
         order.declined = True
+        order.save(force_update=True)
+    elif not order.declined and order.signatures.count() == 4:
+        order.all_signed = True
         order.save(force_update=True)
     return redirect('order', order_id)

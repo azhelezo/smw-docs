@@ -24,3 +24,5 @@ vscode
 .vscode
 .vscode/
 .env
+
+run.py

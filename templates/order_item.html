@@ -59,7 +59,7 @@
             Approved
             {% elif hod_approved == False %}
             Declined
-            {% elif is_hod and hod_aproved == None %}
+            {% elif is_hod and hod_aproved == None and not order.declined %}
             <a href="{% url 'order_sign' order.id 'hod' True %}" class="btn btn-outline-success btn-sm">Approve</a>
             <a href="{% url 'order_sign' order.id 'hod' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
             {% else %}
@@ -81,7 +81,7 @@
             Approved
             {% elif pur_approved == False %}
             Declined
-            {% elif is_pur and pur_aproved == None %}
+            {% elif is_pur and pur_aproved == None and not order.declined %}
             <a href="{% url 'order_sign' order.id 'pur' True %}" class="btn btn-outline-success btn-sm">Approve</a>
             <a href="{% url 'order_sign' order.id 'pur' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
             {% else %}
@@ -103,7 +103,7 @@
             Approved
             {% elif fin_approved == False %}
             Declined
-            {% elif is_fin and fin_aproved == None %}
+            {% elif is_fin and fin_aproved == None and not order.declined %}
             <a href="{% url 'order_sign' order.id 'fin' True %}" class="btn btn-outline-success btn-sm">Approve</a>
             <a href="{% url 'order_sign' order.id 'fin' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
             {% else %}
@@ -125,7 +125,7 @@
             Approved
             {% elif gm_approved == False %}
             Declined
-            {% elif is_gm and gm_aproved == None %}
+            {% elif is_gm and gm_aproved == None and not order.declined %}
             <a href="{% url 'order_sign' order.id 'gm' True %}" class="btn btn-outline-success btn-sm">Approve</a>
             <a href="{% url 'order_sign' order.id 'gm' False %}" class="btn btn-outline-danger btn-sm">Decline</a>
             {% else %}
