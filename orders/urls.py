@@ -13,5 +13,5 @@ urlpatterns = [
     path('order/<int:order_id>/printable/', views.order_printable, name='order_printable'),
     path('order/<int:order_id>/edit/', views.order_edit, name='order_edit'),
     path('order/<int:order_id>/cancel/<str:confirmed>', views.order_cancel, name='order_cancel'),
-    path('order/<int:order_id>/<str:signature_lvl>/<str:resolution>', views.order_sign, name='order_sign'),
+    path('order/<int:order_id>/<int:signature_lvl>/<str:resolution>', views.order_sign, name='order_sign'),
 ]

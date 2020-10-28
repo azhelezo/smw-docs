@@ -29,7 +29,7 @@ class TestOrders(TestCase):
             username='user1',
             password='TestUser1',
             first_name='Ivan',
-            last_name='Dulin'
+            last_name='Ivanov'
             )
         self.user1.profile.department = self.fin_dep
         self.user1.profile.save()
@@ -37,7 +37,7 @@ class TestOrders(TestCase):
             username='user2',
             password='TestUser2',
             first_name='Oleg',
-            last_name='Ololo'
+            last_name='Frolov'
             )
         self.user2.profile.department = self.eng_dep
         self.user2.profile.save()
@@ -45,9 +45,9 @@ class TestOrders(TestCase):
             username='hod1',
             password='TestHOD1',
             first_name='Irina',
-            last_name='Nomnom'
+            last_name='Vasina'
             )
-        self.hod1.profile.is_hod = True
+        self.hod1.profile.sign_as = '0'
         self.hod1.profile.department = self.fin_dep
         self.hod1.profile.save()
         self.hod2 = User.objects.create_user(
@@ -56,7 +56,7 @@ class TestOrders(TestCase):
             first_name='Vera',
             last_name='Ivanova'
             )
-        self.hod2.profile.is_hod = True
+        self.hod2.profile.sign_as = '0'
         self.hod2.profile.department = self.eng_dep
         self.hod2.profile.save()
         self.pur1 = User.objects.create_user(
@@ -65,7 +65,7 @@ class TestOrders(TestCase):
             first_name='Victor',
             last_name='Petrov'
             )
-        self.pur1.profile.is_pur = True
+        self.pur1.profile.sign_as = '1'
         self.pur1.profile.department = self.pur_dep
         self.pur1.profile.save()
         self.pur2 = User.objects.create_user(
@@ -74,7 +74,7 @@ class TestOrders(TestCase):
             first_name='Julia',
             last_name='Povar'
             )
-        self.pur2.profile.is_pur = True
+        self.pur2.profile.sign_as = '1'
         self.pur2.profile.department = self.pur_dep
         self.pur2.profile.save()
         self.fin1 = User.objects.create_user(
@@ -83,7 +83,7 @@ class TestOrders(TestCase):
             first_name='Artem',
             last_name='Sidorov'
             )
-        self.fin1.profile.is_fin = True
+        self.fin1.profile.sign_as = '2'
         self.fin1.profile.department = self.fin_dep
         self.fin1.profile.save()
         self.fin2 = User.objects.create_user(
@@ -92,7 +92,7 @@ class TestOrders(TestCase):
             first_name='Olga',
             last_name='Red'
             )
-        self.fin2.profile.is_fin = True
+        self.fin2.profile.sign_as = '2'
         self.fin2.profile.department = self.fin_dep
         self.fin2.profile.save()
         self.gm = User.objects.create_user(
@@ -101,7 +101,7 @@ class TestOrders(TestCase):
             first_name='Jan',
             last_name='GM'
             )
-        self.gm.profile.is_gm = True
+        self.gm.profile.sign_as = '3'
         self.gm.profile.department = self.gm_dep
         self.gm.profile.save()
         self.user1_client.force_login(self.user1)
@@ -144,6 +144,7 @@ class TestOrders(TestCase):
             self.assertContains(response, order.text)
         else:
             self.assertNotContains(response, order.text)
+        print(response.request)
 
     def check_clients(self, view, no_view, order, desination):
         for client in view:
@@ -169,6 +170,7 @@ class TestOrders(TestCase):
         self.assertEquals(self.order_fin.signatures.count(), 0)
         for client in self.ALL_CLIENTS:
             self.attempt_signature(client, self.order_fin, True)
+        print(Signature.objects.all())
         self.assertEquals(self.order_fin.signatures.count(), 4)
         self.order_fin.refresh_from_db()
         self.assertTrue(self.order_fin.all_signed)

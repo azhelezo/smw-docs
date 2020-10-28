@@ -4,16 +4,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .decorators import user_can_access
 from .forms import OrderForm
 from .models import Order
-from users.models import User, Profile, Signature, LEVEL
+from users.models import User, Profile, Signature, LEVEL, LEVEL_VIEW_ALL
 
 def get_order_list(request, declined):
-    if (
-        (request.user.profile.is_pur) or
-        (request.user.profile.is_fin) or
-        (request.user.profile.is_gm)
-        ):
+    user_access = [int(x) for x in request.user.profile.sign_as]
+    if [x for x in user_access if x in LEVEL_VIEW_ALL]:
         order_list = Order.objects.filter(declined=declined)
-    elif request.user.profile.is_hod:
+    elif 1 in user_access:
         order_list = Order.objects.filter(department=request.user.profile.department, declined=declined)
     else:
         order_list = Order.objects.filter(requested_by=request.user, declined=declined)
@@ -94,28 +91,26 @@ def declined_orders(request):
 @user_can_access
 def order_item(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
-    hod_signature = order.signatures.filter(level='HOD').first()
-    pur_signature = order.signatures.filter(level='PUR').first()
-    fin_signature = order.signatures.filter(level='FIN').first()
-    gm_signature = order.signatures.filter(level='GM').first()
     context = {
-        'is_pur': request.user.profile.is_pur,
-        'is_fin': request.user.profile.is_fin,
-        'is_gm': request.user.profile.is_gm,
         'order': order,
         'declined': order.declined,
-        'hod_approved': hod_signature.approved if hod_signature else None,
-        'pur_approved': pur_signature.approved if pur_signature else None,
-        'fin_approved': fin_signature.approved if fin_signature else None,
-        'gm_approved': gm_signature.approved if gm_signature else None,
-        'hod_name': hod_signature.user.get_full_name() if hod_signature else None,
-        'pur_name': pur_signature.user.get_full_name() if pur_signature else None,
-        'fin_name': fin_signature.user.get_full_name() if fin_signature else None,
-        'gm_name': gm_signature.user.get_full_name() if gm_signature else None,
-        'owner': True if order.requested_by == request.user else False
+        'is_owner': True if order.requested_by == request.user else False,
+        'signature_levels': [x for x, y in LEVEL],
+        'signatures': {}
     }
-    if (request.user.profile.department == order.department) and request.user.profile.is_hod:
-        context['is_hod'] = True
+    for level, level_name in LEVEL:
+        signature = order.signatures.filter(level=level).first()
+        context['signatures'][level] = {
+            'signature': signature,
+            'signature_name': level_name,
+            'user_is_level': str(level) in repr(request.user.profile.sign_as),
+        }
+        if signature is not None:
+            context['signatures'][level]['signed_by'] = signature.user.get_full_name()
+            context['signatures'][level]['approved'] = signature.approved
+        else:
+            context['signatures'][level]['signed_by'] = None
+            context['signatures'][level]['approved'] = None
     return render(request, 'order_item.html', context)
 
 @login_required
@@ -124,14 +119,11 @@ def order_sign(request, order_id, signature_lvl, resolution):
     order = get_object_or_404(Order, pk=order_id)
     profile = request.user.profile
     if (
-            (signature_lvl.upper() == 'HOD' and not profile.is_hod) or
-            (signature_lvl.upper() == 'PUR' and not profile.is_pur) or
-            (signature_lvl.upper() == 'FIN' and not profile.is_fin) or
-            (signature_lvl.upper() == 'GM' and not profile.is_gm)
+            str(signature_lvl) not in repr(profile.sign_as)
         ) or (
-            order.signatures.filter(level=signature_lvl.upper()).first() != None
+            order.signatures.filter(level=signature_lvl).first() != None
         ) or (
-            signature_lvl.upper() not in [x for x, y in LEVEL]
+            signature_lvl not in [x for x, y in LEVEL]
         ) or (
             order.declined
         ):
@@ -139,10 +131,10 @@ def order_sign(request, order_id, signature_lvl, resolution):
     Signature.objects.create(
             user=request.user,
             order=order,
-            level=signature_lvl.upper(),
+            level=signature_lvl,
             approved=resolution,
             win_username=request.META['USERNAME'],
-            win_pcname='default' #  request.META['COMPUTERNAME']
+            win_pcname=request.META.get('COMPUTERNAME', '*nix')
         )
     if resolution == 'False':
         order.declined = True

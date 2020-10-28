@@ -7,7 +7,7 @@
     <div class="row p-3 border border-bottom-0">
         <div class="col text-right">
         {% if not declined %}
-        {% if owner %}
+        {% if is_owner %}
         {% if hod_approved == None %}
             <a href="{% url 'order_edit' order.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
         {% endif %}
@@ -45,6 +45,31 @@
             Amount to be paid: <b>{{ order.amount }}</b> rubles including 20% VAT.
         </div>
     </div>
+    {% for level, values in signatures.items %}
+        <div class="row p-2 border" style="color:{% if values.approved == False %}red{% elif values.approved == True %}green{% endif %}">
+            <div class="col-md">
+                {{ values.signature_name }}:
+            </div>
+            <div class="col-md">
+                {% if values.signature != None %}
+                    {{ values.signed_by }}
+                {% endif %}
+            </div>
+            <div class="col-md text-right">
+                {% if values.approved == True %}
+                    Approved
+                {% elif values.approved == False %}
+                    Declined
+                {% elif values.user_is_level and values.signature == None and not values.declined %}
+                    <a href="{% url 'order_sign' order.id level True %}" class="btn btn-outline-success btn-sm">Approve</a>
+                    <a href="{% url 'order_sign' order.id level False %}" class="btn btn-outline-danger btn-sm">Decline</a>
+                {% else %}
+                    Not signed
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    <!--
     <div class="row p-2 border border-bottom-0" style="color:{% if hod_approved == False %}red{% elif hod_approved == True %}green{% endif %}">
         <div class="col-md">
             Head of Department:
@@ -133,5 +158,6 @@
             {% endif %}
         </div>
     </div>
+    --->
 </div>
 {% endblock %}

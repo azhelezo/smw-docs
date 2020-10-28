@@ -3,14 +3,14 @@ from .models import Profile, Signature
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'is_hod', 'is_pur', 'is_fin', 'is_gm')
+    list_display = ('user', 'department', )
     search_fields = ('user',)
-    list_filter = ('is_hod', 'is_pur', 'is_fin', 'is_gm')
+    list_filter = ('department', )
     empty_value_display = '-пусто-'
 
 class SignatureAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'approved',)
-    empty_value_display = '-пусто-'
+    #empty_value_display = '-пусто-'
 
     def has_change_permission(self, request, obj=None):
         return False
