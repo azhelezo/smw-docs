@@ -29,3 +29,13 @@
 
 Если хотите изменить уровни доступа - внесите изменения в список `LEVEL` в `users/models.py`.
 `LEVEL_VIEW_ALL` - список уровней с правом видеть все заявки.
+
+Находясь в директории проекта, выполните команды:
+```
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+Проект запущен и доступен по адресу [localhost:8000](http://localhost:8000/).
