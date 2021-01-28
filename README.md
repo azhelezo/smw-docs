@@ -25,12 +25,12 @@
 Заявку можно сформировать в версии для печати.
 
 # Установка
-Склонируйте репозиторий.
+Склонируйте репозиторий. Находясь в папке с кодом создайте виртуальное окружение `python -m venv venv`, активируйте его (Windows: `source venv\scripts\activate`; Linux/Mac: `sorce venv/bin/activate`), установите зависимости `python -m pip install -r requirements.txt`.
 
 Если хотите изменить уровни доступа - внесите изменения в список `LEVEL` в `users/models.py`.
 `LEVEL_VIEW_ALL` - список уровней с правом видеть все заявки.
 
-Находясь в директории проекта, выполните команды:
+Для запуска сервера разработки, находясь в директории проекта, выполните команды:
 ```
 python manage.py migrate
 python manage.py createsuperuser
@@ -38,3 +38,14 @@ python manage.py runserver
 ```
 
 Проект запущен и доступен по адресу [localhost:8000](http://localhost:8000/).
+
+## Технологии
+- [Python](https://www.python.org/)
+- [Django](https://www.djangoproject.com/)
+- [django-reversion](https://pypi.org/project/django-reversion/)
+- [django-multiselectfield](https://pypi.org/project/django-multiselectfield/)
+
+## Проект в разработке
+Сейчас в проекте используется дополнение модели `User` через связанную модель `Profile`. Автор планирует отказаться от такой архитектуры и полностью переписать модель `User`.
+Проект разрабатывается на БД sqlite3, планируется перенос на PostgreSQL.
+Также планируется упаковка приложения в Docker.
